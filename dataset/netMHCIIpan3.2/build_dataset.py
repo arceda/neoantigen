@@ -33,7 +33,15 @@ pseudo_sequences = pd.read_csv( f"../netMHCIIpan4.1/pseudosequence.2016.all.X.da
 train.rename(columns={0:'peptide', 1:'label', 2:'mhc_type'},  inplace=True)
 train['masslabel'] = train.apply(lambda row: (1 if row['label'] > 0.426 else 0), axis=1)
 train['mhc'] = train.apply(lambda row: ( pseudo_sequences.loc[row['mhc_type']] ), axis=1)
+train_shuffle = train.sample(frac=1, random_state=42).reset_index(drop=True)
+
+val_count = int(train_shuffle.shape[0]*0.15)
+print(val_count)
+eval = train_shuffle.iloc[:val_count, :]
+train = train_shuffle.iloc[val_count:, :] 
+
 train.to_csv("train.csv", index=False)
+eval.to_csv("eval.csv", index=False)
 
 test.rename(columns={0:'peptide', 1:'label', 2:'mhc_type'},  inplace=True)
 test['masslabel'] = test.apply(lambda row: (1 if row['label'] > 0.426 else 0), axis=1)
