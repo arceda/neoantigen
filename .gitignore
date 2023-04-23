@@ -21,8 +21,10 @@ BERTMHC/bertmhc/.ipynb_checkpoints/*
 BERTMHC/bertmhc/__pycache__/*
 BERTMHC/bertmhc/model.pt
 BERTMHC/tests/data/btab422_supplementary_data/.ipynb_checkpoints/*
+BERTMHC/.DS_Store
 
 HLAB/HLAB-code-20211227.tar.gz
 HLAB/HLAB-v1-00.tar.gz
 
 dataset/netMHCpan4.1/gkaa379_supplemental_files.zip
+
