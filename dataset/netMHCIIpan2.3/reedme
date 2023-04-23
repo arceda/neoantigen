@@ -1,0 +1,19 @@
+The training binding data are partitioned in 5 files to be used for cross-validation. 
+For instance does the train1 file contain training data, and test1 file test data for the first cross-validation partitioning. It is critical that this data partitioning is maintained.
+
+The format for each of the files is
+
+AAAGAEAGKATTEEQ 0.190842        DRB1_0101
+AAAGAEAGKATTEEQ 0.006301        DRB1_0301
+AAAGAEAGKATTEEQ 0.066851        DRB1_0401
+AAAGAEAGKATTEEQ 0.006344        DRB1_0405
+AAAGAEAGKATTEEQ 0.035130        DRB1_0701
+AAAGAEAGKATTEEQ 0.006288        DRB1_0802
+AAAGAEAGKATTEEQ 0.176268        DRB1_0901
+AAAGAEAGKATTEEQ 0.042555        DRB1_1101
+AAAGAEAGKATTEEQ 0.114855        DRB1_1302
+AAAGAEAGKATTEEQ 0.006377        DRB1_1501
+
+where the first column gives the peptide, the second column the log50k transformed binding affinity (i.e. 1 - log50k( aff nM)), and the last column the class II allele.
+
+When classifying the peptides into binders and non-binders for calculation of the AUC values for instance, a threshold of 500 nM is used. This means that peptides with log50k transformed binding affinity values greater than 0.426 are classified as binders.
