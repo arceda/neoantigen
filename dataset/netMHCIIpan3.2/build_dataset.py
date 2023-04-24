@@ -2,7 +2,8 @@
 
 # Este script genera un csv para el entrenamiento de BERTMHC, 
 # va a consiederar las muestras de netMHCIIpan3.2.
-# Todas las pseudosecuencias estan netMHCIIpan4.1
+# Todas las pseudosecuencias estan netMHCIIpan4.1.
+# ala parecer esta basa de daos es mas grande que la utilizada en BERTMHC.
 
 import pandas as pd  
 import numpy as np

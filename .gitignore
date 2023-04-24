@@ -29,5 +29,5 @@ HLAB/HLAB-v1-00.tar.gz
 dataset/netMHCpan4.1/gkaa379_supplemental_files.zip
 
 BERTMHC/bertmhc/bertmhc_model.pt
-.gitignore
 BERTMHC/bertmhc/bertmhc_model_optim.pt
+BERTMHC/bertmhc/*.pt

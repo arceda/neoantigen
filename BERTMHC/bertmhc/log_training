@@ -2,7 +2,9 @@ NetMHCIIpan3.0 used FNN with 10, 15, 40 and 60 hidden neurons, additionally. and
 
 NetMHCIIpan need an alignment of the peptide-binding core 
 
+TRAIN 1 ##############################################################################################################################################################
 python cli.py train --lr 0.15 --batch_size 32 --alpha 0 --wd 0.0  --peplen 24 --epochs 10  --data /home/vicente/projects/neoantigen/dataset/netMHCIIpan3.2/ --train train.csv --eval eval.csv --save bertmhc_model.pt
+######################################################################################################################################################################
 
 Training epoch 1
 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 14268/14268 [32:25<00:00,  7.33it/s]
@@ -28,3 +30,6 @@ Early stopping
 root - Arguments: Namespace(alpha=0.0, batch_size=32, calibrate=False, data='/home/vicente/projects/neoantigen/dataset/netMHCIIpan3.2/', deconvolution=False, epochs=10, eval='eval.csv', func=<function train_bertmhc at 0x7fdf22dc8550>, instance_weight=False, lr=0.15, metric='val_auc', negative='max', patience=5, peplen=24, random_init=False, sa_epoch=15, save='bertmhc_model.pt', seed=1111, train='train.csv', w_pos=1.0, wd=0.0)
 
 
+TRAIN 2 ##############################################################################################################################################################
+python cli.py train --lr 0.15 --batch_size 32 --alpha 0 --wd 0.0  --peplen 24 --epochs 10  --data /home/vicente/projects/neoantigen/dataset/netMHCIIpan3.2/ --train train_mini.csv --eval eval_mini.csv --save TRAIN_2_bertmhc_model.pt
+######################################################################################################################################################################

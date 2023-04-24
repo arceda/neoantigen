@@ -1,9 +1,3 @@
-Aquí se realizo una coṕia para modificar el codigo
-para entrenar :
-- dirigirnos  a la carpeta bertmhc2
-python cli.py train --lr 0.001 --batch_size 4 --alpha 0 --wd 0.0 --patience 5 --epochs 80
-
-
 del repo original
 
 bertmhc train --lr 0.15 --batch_size 64 --alpha 0 --wd 0.0
@@ -12,9 +6,6 @@ bertmhc train --lr 0.15 --batch_size 64 --alpha 0 --wd 0.0
 --train <train.csv.gz>
 --eval <eval.csv.gz>
 --save <model.pt>
-
-
-
 
 en mi repo local, con esto se entreno para las pruebas
 
