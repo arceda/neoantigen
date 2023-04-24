@@ -1,0 +1,30 @@
+NetMHCIIpan3.0 used FNN with 10, 15, 40 and 60 hidden neurons, additionally. and develop a new method for getting pesudo sequences of MHC-II.
+
+NetMHCIIpan need an alignment of the peptide-binding core 
+
+python cli.py train --lr 0.15 --batch_size 32 --alpha 0 --wd 0.0  --peplen 24 --epochs 10  --data /home/vicente/projects/neoantigen/dataset/netMHCIIpan3.2/ --train train.csv --eval eval.csv --save bertmhc_model.pt
+
+Training epoch 1
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 14268/14268 [32:25<00:00,  7.33it/s]
+root - Sample dict log: {'val_cor': 0.1109763587960743, 'val_auc': 0.5163410757484219, 'val_ap': 0.39691742924822576, 'val_mass_auc': 0.46325208322524664, 'val_loss': 0.01044666217222977, 'train_loss': 0.020366989069022418}
+EarlyStopping counter: 1 out of 5
+Training epoch 2
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 14268/14268 [32:22<00:00,  7.34it/s]
+root - Sample dict log: {'val_cor': 0.11610878158699077, 'val_auc': 0.5175663326649574, 'val_ap': 0.38377959353728724, 'val_mass_auc': 0.43333472771557785, 'val_loss': 0.010374097083817762, 'train_loss': 0.020770571071894024}
+EarlyStopping counter: 2 out of 5
+Training epoch 3
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 14268/14268 [32:20<00:00,  7.35it/s]
+root - Sample dict log: {'val_cor': 0.1931346289933793, 'val_auc': 0.5876398422568967, 'val_ap': 0.3797822196152467, 'val_mass_auc': 0.4272429130054082, 'val_loss': 0.010376446253137642, 'train_loss': 0.02076959457121128}
+EarlyStopping counter: 3 out of 5
+Training epoch 4
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 14268/14268 [32:31<00:00,  7.31it/s]
+root - Sample dict log: {'val_cor': 0.25506266075918194, 'val_auc': 0.639765349781708, 'val_ap': 0.4076315280153936, 'val_mass_auc': 0.48014506577163946, 'val_loss': 0.010374991157188422, 'train_loss': 0.02075130332175714}
+EarlyStopping counter: 4 out of 5
+Training epoch 5
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████|
+root - Sample dict log: {'val_cor': 0.24957370279930194, 'val_auc': 0.6528625616518977, 'val_ap': 0.3553027277471182, 'val_mass_auc': 0.38133200604855855, 'val_loss': 0.010376628209765482, 'train_loss': 0.02075156049645926}
+EarlyStopping counter: 5 out of 5
+Early stopping
+root - Arguments: Namespace(alpha=0.0, batch_size=32, calibrate=False, data='/home/vicente/projects/neoantigen/dataset/netMHCIIpan3.2/', deconvolution=False, epochs=10, eval='eval.csv', func=<function train_bertmhc at 0x7fdf22dc8550>, instance_weight=False, lr=0.15, metric='val_auc', negative='max', patience=5, peplen=24, random_init=False, sa_epoch=15, save='bertmhc_model.pt', seed=1111, train='train.csv', w_pos=1.0, wd=0.0)
+
+
