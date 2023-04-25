@@ -31,3 +31,8 @@ dataset/netMHCpan4.1/gkaa379_supplemental_files.zip
 BERTMHC/bertmhc/bertmhc_model.pt
 BERTMHC/bertmhc/bertmhc_model_optim.pt
 BERTMHC/bertmhc/*.pt
+
+ImmunoBERT/pMHC/__pycache__/*
+ImmunoBERT/pMHC/data/__pycache__/*
+ImmunoBERT/pMHC/interpret/__pycache__/*
+ImmunoBERT/pMHC/logic/__pycache__/*
