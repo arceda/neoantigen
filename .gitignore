@@ -25,6 +25,7 @@ BERTMHC/.DS_Store
 
 HLAB/HLAB-code-20211227.tar.gz
 HLAB/HLAB-v1-00.tar.gz
+HLAB/HLAB-code-20211227/results/*
 
 dataset/netMHCpan4.1/gkaa379_supplemental_files.zip
 
@@ -36,3 +37,7 @@ ImmunoBERT/pMHC/__pycache__/*
 ImmunoBERT/pMHC/data/__pycache__/*
 ImmunoBERT/pMHC/interpret/__pycache__/*
 ImmunoBERT/pMHC/logic/__pycache__/*
+
+models/*
+
+
