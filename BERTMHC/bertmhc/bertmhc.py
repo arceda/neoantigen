@@ -85,3 +85,24 @@ class BERTMHC(ProteinBertAbstractModel):
         # (loss), prediction_scores, (hidden_states), (attentions)
         return outputs
 
+
+class BertForSequenceClassification(ProteinBertModel):
+    def __init__(self, config):
+        super().__init__(config)
+
+        self.bert = ProteinBertModel(config)
+        self.classify = MHCHead(
+            config.hidden_size, config.num_labels)
+
+        self.init_weights()
+
+    def forward(self, input_ids, input_mask=None, targets=None):
+
+        outputs = self.bert(input_ids, input_mask=input_mask)
+
+        sequence_output, pooled_output = outputs[:2]
+
+        average = torch.mean(sequence_output, dim=1)
+        outputs = self.classify(average, targets) + outputs[2:]
+        # (loss), prediction_scores, (hidden_states), (attentions)
+        return outputs
