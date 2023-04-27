@@ -46,7 +46,7 @@ from tape import ProteinBertAbstractModel, ProteinBertModel
 from tape.models.modeling_utils import SimpleMLP
 import torch
 import torch.nn as nn
-
+import torch.nn.functional as F
 
 class MHCHead(nn.Module):
     def __init__(self, hidden_size: int, num_labels: int):
@@ -76,23 +76,42 @@ class BERTMHC(ProteinBertAbstractModel):
 
     def forward(self, input_ids, input_mask=None, targets=None):
 
-        outputs = self.bert(input_ids, input_mask=input_mask)
+        outputs = self.bert(input_ids, input_mask=input_mask)        
 
         sequence_output, pooled_output = outputs[:2]
+        # torch.Size([32, 56, 768]) 
+        # torch.Size([ batch size, sequence amino acids (variable), dim-vector ]) 
+        #print(sequence_output)
+        #print(sequence_output.shape)
 
         average = torch.mean(sequence_output, dim=1)
+        #print(average.shape)
         outputs = self.classify(average, targets) + outputs[2:]
         # (loss), prediction_scores, (hidden_states), (attentions)
         return outputs
 
 
-class BertForSequenceClassification(ProteinBertModel):
+# ACTUALIZACIÓN, UTILZIANDO UNA 1DCNN
+""" # it owrks poorly
+class BERTMHC_CNN(ProteinBertAbstractModel):
+
     def __init__(self, config):
         super().__init__(config)
 
         self.bert = ProteinBertModel(config)
-        self.classify = MHCHead(
-            config.hidden_size, config.num_labels)
+
+        self.layer1 = nn.Sequential(
+            nn.Conv1d(60, 128, kernel_size=3), # 60 xq tenemos 60 aminoacidos
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.MaxPool1d(10))
+        self.layer2 = nn.Flatten()
+        self.layer3 = nn.Sequential(
+            nn.Linear(9728,4000),
+            nn.ReLU())
+        self.layer4 = nn.Sequential(
+            nn.Linear(4000,600),
+            nn.Softmax())        
 
         self.init_weights()
 
@@ -102,7 +121,66 @@ class BertForSequenceClassification(ProteinBertModel):
 
         sequence_output, pooled_output = outputs[:2]
 
-        average = torch.mean(sequence_output, dim=1)
-        outputs = self.classify(average, targets) + outputs[2:]
-        # (loss), prediction_scores, (hidden_states), (attentions)
-        return outputs
+        # print(sequence_output.shape) # torch.Size([32, 60, 768])
+
+        #average = torch.mean(sequence_output, dim=1)
+        #outputs = self.classify(average, targets) + outputs[2:]
+        
+        outputs = self.layer1(sequence_output)
+        outputs = self.layer2(outputs)
+        outputs = self.layer3(outputs)
+        logits = self.layer4(outputs)
+        
+        outputs = (logits, )
+
+        if targets is not None:
+            outputs = logits, targets
+
+        return outputs  # logits, (targets)
+"""
+
+ # tampoco converge
+class BERTMHC_CNN(ProteinBertAbstractModel):
+
+    def __init__(self, config):
+        super().__init__(config)
+
+        self.bert = ProteinBertModel(config)
+
+        self.conv1 = nn.Conv2d(1, 6, 5)  
+        self.pool = nn.MaxPool2d(2, 2)    
+        self.conv2 = nn.Conv2d(6, 16, 5) 
+        
+        self.fc1 = nn.Linear(16*12*189, 100) 
+        self.fc2 = nn.Linear(100, 10)
+
+        self.init_weights()
+
+    def forward(self, input_ids, input_mask=None, targets=None):
+
+        outputs = self.bert(input_ids, input_mask=input_mask)
+
+        sequence_output, pooled_output = outputs[:2]  # [batch_size, 60, 768]       
+        
+        sequence_output = sequence_output.view(       # [batch_size, 1, 60, 768]     
+                sequence_output.shape[0], 1, 
+                sequence_output.shape[1], 
+                sequence_output.shape[2])
+        
+        x = F.relu(self.conv1(sequence_output))  # [1, 60, 768] -> [6, 60, 768]
+        x = self.pool(x)           # [6, 28, 28] -> [6, 14, 14]
+        x = F.relu(self.conv2(x))  # [6, 14, 14] -> [16, 10, 10]
+        x = self.pool(x)           # [16, 10, 10] -> [16, 5, 5]
+        
+        x = x.view(-1, 16*12*189) 
+        
+        x = F.relu(self.fc1(x))
+        logits = F.softmax(self.fc2(x))
+        
+        outputs = (logits, )        
+
+        if targets is not None:
+            outputs = logits, targets
+
+        return outputs  # logits, (targets)
+
