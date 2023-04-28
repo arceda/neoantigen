@@ -165,36 +165,3 @@ root - Sample dict log: {'val_cor': 0.5816770331503545, 'val_auc': 0.88262452016
 EarlyStopping counter: 2 out of 5
 root - Arguments: Namespace(alpha=0.0, batch_size=32, calibrate=False, data='/home/vicente/projects/neoantigen/dataset/netMHCIIpan3.2/', deconvolution=False, epochs=20, eval='eval_mini.csv', func=<function train_bertmhc at 0x7efd3466caf0>, instance_weight=False, lr=0.15, metric='val_auc', negative='max', patience=5, peplen=24, random_init=False, sa_epoch=15, save='TRAIN_3_bertmhc_model.pt', seed=1111, train='train_mini.csv', w_pos=1.0, wd=0.0)
 
-
-TRAIN 4 # igual al train 2 pero 20 epoch ##############################################################################################################################################################
-# con dataloader.ipynb, es igual a TRAIN 3, pero se aplico padding a los aminoacidos
-######################################################################################################################################################################
-Training epoch 0
-100%|██████████| 3357/3357 [08:05<00:00,  6.91it/s]
-root - Sample dict log: {'val_cor': 0.47600229845905223, 'val_auc': 0.8276786000804977, 'val_ap': 0.26774950394273983, 'val_mass_auc': 0.18202043838814458, 'val_loss': 0.009493345314276726, 'train_loss': 0.01896895558981401}
-Validation loss (inf --> -0.827679).  Saving model ...
-Training epoch 1
-100%|██████████| 3357/3357 [07:59<00:00,  7.00it/s]
-root - Sample dict log: {'val_cor': 0.4880998857064658, 'val_auc': 0.83409745494861, 'val_ap': 0.26574393192943113, 'val_mass_auc': 0.17314652637999628, 'val_loss': 0.009285655295454678, 'train_loss': 0.018731315148062727}
-Validation loss (-0.827679 --> -0.834097).  Saving model ...
-Training epoch 2
-100%|██████████| 3357/3357 [07:54<00:00,  7.08it/s]
-root - Sample dict log: {'val_cor': 0.4758378216885472, 'val_auc': 0.8307517529906003, 'val_ap': 0.27012540936228097, 'val_mass_auc': 0.1924495565256913, 'val_loss': 0.009323279102856396, 'train_loss': 0.01870052745254499}
-EarlyStopping counter: 1 out of 5
-Training epoch 3
-100%|██████████| 3357/3357 [07:55<00:00,  7.07it/s]
-root - Sample dict log: {'val_cor': 0.4623938766035185, 'val_auc': 0.815733101930439, 'val_ap': 0.2712754486968052, 'val_mass_auc': 0.19673478189477445, 'val_loss': 0.00937158383799693, 'train_loss': 0.018828096735189367}
-EarlyStopping counter: 2 out of 5
-Training epoch 4
-100%|██████████| 3357/3357 [07:55<00:00,  7.07it/s]
-root - Sample dict log: {'val_cor': 0.37659248132268525, 'val_auc': 0.7646698964658993, 'val_ap': 0.3249674330362571, 'val_mass_auc': 0.3612208198287255, 'val_loss': 0.0098710619501319, 'train_loss': 0.019169449556251616}
-EarlyStopping counter: 3 out of 5
-Training epoch 5
-100%|██████████| 3357/3357 [07:55<00:00,  7.07it/s]
-root - Sample dict log: {'val_cor': 0.46333705358069777, 'val_auc': 0.81784380171979, 'val_ap': 0.2872063916378075, 'val_mass_auc': 0.2579417935781305, 'val_loss': 0.009321794832679605, 'train_loss': 0.018929876754155268}
-EarlyStopping counter: 4 out of 5
-Training epoch 6
-100%|██████████| 3357/3357 [07:55<00:00,  7.07it/s]
-root - Sample dict log: {'val_cor': 0.4818594211868836, 'val_auc': 0.8296493085600369, 'val_ap': 0.271832701472018, 'val_mass_auc': 0.19985634451114553, 'val_loss': 0.00927591575090467, 'train_loss': 0.01866380138683921}
-EarlyStopping counter: 5 out of 5
-Early stopping
