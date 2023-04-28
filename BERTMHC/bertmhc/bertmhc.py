@@ -55,11 +55,15 @@ class MHCHead(nn.Module):
 
     def forward(self, pooled_output, targets=None):
         logits = self.classify(pooled_output)
+
+        #print(logits.shape) #(batch_size, 2)
+
         outputs = (logits, )
 
-        if targets is not None:
-            outputs = logits, targets
+        if targets is not None:            
+            outputs = logits, targets            
 
+        #print(outputs)
         return outputs  # logits, (targets)
 
 
@@ -79,17 +83,46 @@ class BERTMHC(ProteinBertAbstractModel):
         outputs = self.bert(input_ids, input_mask=input_mask)        
 
         sequence_output, pooled_output = outputs[:2]
-        # torch.Size([32, 56, 768]) 
-        # torch.Size([ batch size, sequence amino acids (variable), dim-vector ]) 
-        #print(sequence_output)
-        #print(sequence_output.shape)
-
+        
         average = torch.mean(sequence_output, dim=1)
         #print(average.shape)
-        outputs = self.classify(average, targets) + outputs[2:]
+        logits = self.classify(average, targets)
+        #print(logits)
+        outputs = logits + outputs[2:]        
         # (loss), prediction_scores, (hidden_states), (attentions)
         return outputs
 
+# BERTMHC linnear, BERT con una capa lineal al final
+class BERTMHC_LINEAR(ProteinBertAbstractModel):
+
+    def __init__(self, config):
+        super().__init__(config)
+
+        self.bert       = ProteinBertModel(config)
+        self.dropout    = nn.Dropout(0.8)
+        self.linear     = nn.Linear(config.hidden_size, 2)
+        self.sigmoid    = nn.Sigmoid() 
+
+        self.init_weights()
+
+    def forward(self, input_ids, input_mask=None, targets=None):
+        outputs = self.bert(input_ids, input_mask=input_mask)        
+
+        sequence_output, pooled_output = outputs[:2]  
+        #average = torch.mean(sequence_output, dim=1)
+
+        out     = self.dropout(pooled_output)
+        out     = self.linear(out)
+        logits  = self.sigmoid(out)
+
+        out = (logits, )
+
+        if targets is not None:
+            out = logits, targets
+
+        outputs = out + outputs[2:]
+        return outputs
+    
 
 # ACTUALIZACIÓN, UTILZIANDO UNA 1DCNN
 """ # it owrks poorly
