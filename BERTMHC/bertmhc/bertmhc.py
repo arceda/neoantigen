@@ -48,6 +48,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+''' # MHCHead
+(0): Linear(in_features=768, out_features=512, bias=True)
+(1): ReLU()
+(2): Dropout(p=0.0, inplace=True)
+(3): Linear(in_features=512, out_features=2, bias=True)
+'''
 class MHCHead(nn.Module):
     def __init__(self, hidden_size: int, num_labels: int):
         super().__init__()
@@ -55,53 +61,39 @@ class MHCHead(nn.Module):
 
     def forward(self, pooled_output, targets=None):
         logits = self.classify(pooled_output)
-
         #print(logits.shape) #(batch_size, 2)
-
         outputs = (logits, )
-
         if targets is not None:            
-            outputs = logits, targets            
-
-        #print(outputs)
+            outputs = logits, targets   
         return outputs  # logits, (targets)
 
-
 class BERTMHC(ProteinBertAbstractModel):
-
     def __init__(self, config):
         super().__init__(config)
 
         self.bert = ProteinBertModel(config)
         self.classify = MHCHead(
             config.hidden_size, config.num_labels)
-
         self.init_weights()
 
     def forward(self, input_ids, input_mask=None, targets=None):
-
-        outputs = self.bert(input_ids, input_mask=input_mask)        
-
-        sequence_output, pooled_output = outputs[:2]
-        
+        outputs = self.bert(input_ids, input_mask=input_mask)
+        sequence_output, pooled_output = outputs[:2]        
         average = torch.mean(sequence_output, dim=1)
-        #print(average.shape)
         logits = self.classify(average, targets)
-        #print(logits)
-        outputs = logits + outputs[2:]        
-        # (loss), prediction_scores, (hidden_states), (attentions)
+        outputs = logits + outputs[2:]  
         return outputs
 
 # BERTMHC linnear, BERT con una capa lineal al final
 class BERTMHC_LINEAR(ProteinBertAbstractModel):
-
     def __init__(self, config):
-        super().__init__(config)
+        super().__init__(config)       
 
         self.bert       = ProteinBertModel(config)
-        self.dropout    = nn.Dropout(0.8)
-        self.linear     = nn.Linear(config.hidden_size, 2)
-        self.sigmoid    = nn.Sigmoid() 
+        self.dropout    = nn.Dropout(0.0)
+        self.relu       = nn.ReLU()
+        self.linear_1   = nn.Linear(config.hidden_size, 512)
+        self.linear_2   = nn.Linear(512, 2)
 
         self.init_weights()
 
@@ -109,20 +101,73 @@ class BERTMHC_LINEAR(ProteinBertAbstractModel):
         outputs = self.bert(input_ids, input_mask=input_mask)        
 
         sequence_output, pooled_output = outputs[:2]  
-        #average = torch.mean(sequence_output, dim=1)
+        average = torch.mean(sequence_output, dim=1)
 
-        out     = self.dropout(pooled_output)
-        out     = self.linear(out)
-        logits  = self.sigmoid(out)
+        out     = self.linear_1(average)
+        out     = self.relu(out)
+        out     = self.dropout(out)
+        logits  = self.linear_2(out)
 
         out = (logits, )
-
         if targets is not None:
             out = logits, targets
-
         outputs = out + outputs[2:]
         return outputs
     
+# RNN with Attention
+class BERTMHC_RNN_ATT(ProteinBertAbstractModel):
+    def __init__(self, config):
+        super().__init__(config)       
+
+        self.bert       = ProteinBertModel(config)
+
+        self.num_labels = config.num_labels        
+        self.hidden_size = config.hidden_size
+        self.num_rnn_layer = 2
+        self.rnn_dropout = 0.1
+        self.rnn_hidden = 768
+        self.max_seq_len = 51
+        self.att_dropout = 0.1
+
+        self.rnn = nn.LSTM(input_size=self.hidden_size, hidden_size=self.rnn_hidden, bidirectional=True,
+                               num_layers=self.num_rnn_layer, batch_first=True, dropout=self.rnn_dropout)        
+
+        self.w_omega = nn.Parameter(torch.Tensor(self.rnn_hidden * 2, self.rnn_hidden * 2))
+        self.u_omega = nn.Parameter(torch.Tensor(self.rnn_hidden * 2, 1))
+
+        nn.init.uniform_(self.w_omega, -0.1, 0.1)
+        nn.init.uniform_(self.u_omega, -0.1, 0.1)
+        self.dropout = nn.Dropout(self.rnn_dropout)
+        self.att_dropout = nn.Dropout(self.att_dropout)
+        self.classifier = nn.Linear(2*self.rnn_hidden, config.num_labels)
+
+        self.init_weights()
+
+    def attention_net(self, x, query, mask=None):
+        d_k = query.size(-1)
+        scores = torch.matmul(query, x.transpose(1, 2)) /math.sqrt(d_k)  #   scores:[batch, seq_len, seq_len]
+        p_attn = F.softmax(scores, dim=-1)
+        rattention = torch.matmul(p_attn, x)
+        context = torch.matmul(p_attn, x).sum(1)  # [batch, seq_len, hidden_dim*2]->[batch, hidden_dim*2]
+        return context, rattention
+
+    def forward(self, input_ids, input_mask=None, targets=None):
+        outputs = self.bert(input_ids, input_mask=input_mask)        
+
+        sequence_output, pooled_output = outputs[:2]  
+        average = torch.mean(sequence_output, dim=1)
+
+        # lstm
+        rnn_out, (ht, ct) = self.rnn(pooled_output)
+        query = self.att_dropout(rnn_out)
+        attn_output, attention = self.attention_net(rnn_out, query)  # 
+        logits = self.classifier(attn_output)
+
+        out = (logits, )
+        if targets is not None:
+            out = logits, targets
+        outputs = out + outputs[2:]
+        return outputs
 
 # ACTUALIZACIÓN, UTILZIANDO UNA 1DCNN
 """ # it owrks poorly
