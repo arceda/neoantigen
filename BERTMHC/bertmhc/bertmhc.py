@@ -98,20 +98,105 @@ class BERTMHC_LINEAR(ProteinBertAbstractModel):
         self.init_weights()
 
     def forward(self, input_ids, input_mask=None, targets=None):
-        outputs = self.bert(input_ids, input_mask=input_mask)        
+        bert_output = self.bert(input_ids, input_mask=input_mask)        
 
-        sequence_output, pooled_output = outputs[:2]  
+        sequence_output, pooled_output = bert_output[:2]  
         average = torch.mean(sequence_output, dim=1)
 
         out     = self.linear_1(average)
         out     = self.relu(out)
         out     = self.dropout(out)
-        logits  = self.linear_2(out)
+        logits  = self.linear_2(out)    
 
         out = (logits, )
         if targets is not None:
-            out = logits, targets
-        outputs = out + outputs[2:]
+            out = logits, targets       
+
+        outputs = out + bert_output[2:] # bert_output[2:] esta vacio ?
+        return outputs
+    
+# BERTMHC RNN, BERT con una capa lineal al final, estamos utilziando el pooled output de TAPE
+class BERTMHC_RNN(ProteinBertAbstractModel):
+    def __init__(self, config):
+        super().__init__(config)    
+
+        self.bert       = ProteinBertModel(config)   
+
+        self.num_labels = config.num_labels        
+        self.hidden_size = config.hidden_size
+        self.num_rnn_layer = 2
+        self.rnn_dropout = 0.1
+        self.rnn_hidden = 768
+        self.max_seq_len = 51
+        self.att_dropout = 0.1
+
+        self.dropout = nn.Dropout(self.rnn_dropout)
+        self.classifier = nn.Linear(2*self.rnn_hidden, self.num_labels)
+
+        self.rnn = nn.LSTM(     input_size=self.hidden_size, hidden_size=self.rnn_hidden, 
+                                bidirectional=True, num_layers=self.num_rnn_layer, 
+                                batch_first=True, dropout=self.rnn_dropout)        
+
+        self.init_weights()
+
+    def forward(self, input_ids, input_mask=None, targets=None):
+        bert_output = self.bert(input_ids, input_mask=input_mask)        
+
+        sequence_output, pooled_output = bert_output[:2] # pooled_output: [batch, 768]        
+        average = torch.mean(sequence_output, dim=1) # average: [batch, 768]
+
+        rnn_out, (ht, ct) = self.rnn(pooled_output) # [batch, 1536]
+
+        #output = rnn_out.permute(0, 2, 1)
+        #output = F.max_pool1d(rnn_out, self.max_seq_len)
+        model_output = self.dropout(rnn_out)
+        logits = self.classifier(model_output) # # logits: torch.Size([batch, 2])
+
+        out = (logits, )
+        if targets is not None:
+            out = logits, targets       
+
+        outputs = out + bert_output[2:] # bert_output[2:] esta vacio ?
+        return outputs
+    
+# BERTMHC RNN, BERT con una capa lineal al final. usamos la salida de TAPE
+class BERTMHC_RNN2(ProteinBertAbstractModel):
+    def __init__(self, config):
+        super().__init__(config)    
+
+        self.bert       = ProteinBertModel(config)   
+
+        self.num_labels = config.num_labels        
+        self.hidden_size = config.hidden_size
+        self.num_rnn_layer = 2
+        self.rnn_dropout = 0.1
+        self.rnn_hidden = 768
+        self.max_seq_len = 51
+        self.att_dropout = 0.1
+
+        self.dropout = nn.Dropout(self.rnn_dropout)
+        self.classifier = nn.Linear(2*self.rnn_hidden, self.num_labels)
+
+        self.rnn = nn.LSTM(     input_size=self.hidden_size, hidden_size=self.rnn_hidden, 
+                                bidirectional=True, num_layers=self.num_rnn_layer, 
+                                batch_first=True, dropout=self.rnn_dropout)        
+
+        self.init_weights()
+
+    def forward(self, input_ids, input_mask=None, targets=None):
+        bert_output = self.bert(input_ids, input_mask=input_mask)        
+
+        sequence_output, pooled_output = bert_output[:2] # sequence: [batch, 60, 768]
+               
+        rnn_out, (ht, ct) = self.rnn(sequence_output) # rnn_out: [batch, 60, 1536]        
+        model_output = self.dropout(rnn_out)                
+        logits = self.classifier(model_output[:,-1]) # logits: torch.Size([batch, 2])
+
+        out = (logits, )
+        if targets is not None:
+            out = logits, targets       
+
+        outputs = out + bert_output[2:] # bert_output[2:] esta vacio ?
         return outputs
     
 # RNN with Attention
@@ -155,7 +240,7 @@ class BERTMHC_RNN_ATT(ProteinBertAbstractModel):
         outputs = self.bert(input_ids, input_mask=input_mask)        
 
         sequence_output, pooled_output = outputs[:2]  
-        average = torch.mean(sequence_output, dim=1)
+        #average = torch.mean(sequence_output, dim=1)
 
         # lstm
         rnn_out, (ht, ct) = self.rnn(pooled_output)

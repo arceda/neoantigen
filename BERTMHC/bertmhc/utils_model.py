@@ -338,8 +338,8 @@ def evaluate(model, val_data, device, aff_criterion, mass_criterion, alpha):
                                          torch.ones(batch['targets'].shape[0], ).to(device))
             logits, targets = model(**batch)
 
-            label_valid = ~torch.isnan(targets[:, 0])
-            mass_valid = ~torch.isnan(targets[:, 1])
+            label_valid = ~torch.isnan(targets[:, 0]) # binding (regression)
+            mass_valid = ~torch.isnan(targets[:, 1])  # presentation (classification)
             if torch.sum(label_valid) > 0:
                 aff_loss = aff_criterion(logits[label_valid, 0], targets[label_valid, 0]).item()
             else:
