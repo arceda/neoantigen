@@ -47,6 +47,7 @@ from tape.models.modeling_utils import SimpleMLP
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
 
 ''' # MHCHead
 (0): Linear(in_features=768, out_features=512, bias=True)
@@ -204,7 +205,7 @@ class BERTMHC_RNN_ATT(ProteinBertAbstractModel):
     def __init__(self, config):
         super().__init__(config)       
 
-        self.bert       = ProteinBertModel(config)
+        self.bert       = ProteinBertModel(config)   
 
         self.num_labels = config.num_labels        
         self.hidden_size = config.hidden_size
@@ -214,44 +215,43 @@ class BERTMHC_RNN_ATT(ProteinBertAbstractModel):
         self.max_seq_len = 51
         self.att_dropout = 0.1
 
-        self.rnn = nn.LSTM(input_size=self.hidden_size, hidden_size=self.rnn_hidden, bidirectional=True,
-                               num_layers=self.num_rnn_layer, batch_first=True, dropout=self.rnn_dropout)        
-
-        self.w_omega = nn.Parameter(torch.Tensor(self.rnn_hidden * 2, self.rnn_hidden * 2))
-        self.u_omega = nn.Parameter(torch.Tensor(self.rnn_hidden * 2, 1))
-
-        nn.init.uniform_(self.w_omega, -0.1, 0.1)
-        nn.init.uniform_(self.u_omega, -0.1, 0.1)
         self.dropout = nn.Dropout(self.rnn_dropout)
-        self.att_dropout = nn.Dropout(self.att_dropout)
-        self.classifier = nn.Linear(2*self.rnn_hidden, config.num_labels)
+        self.classifier = nn.Linear(2*self.rnn_hidden, self.num_labels)
+
+        self.rnn = nn.LSTM(     input_size=self.hidden_size, hidden_size=self.rnn_hidden, 
+                                bidirectional=True, num_layers=self.num_rnn_layer, 
+                                batch_first=True, dropout=self.rnn_dropout)  
 
         self.init_weights()
 
-    def attention_net(self, x, query, mask=None):
-        d_k = query.size(-1)
-        scores = torch.matmul(query, x.transpose(1, 2)) /math.sqrt(d_k)  #   scores:[batch, seq_len, seq_len]
-        p_attn = F.softmax(scores, dim=-1)
-        rattention = torch.matmul(p_attn, x)
-        context = torch.matmul(p_attn, x).sum(1)  # [batch, seq_len, hidden_dim*2]->[batch, hidden_dim*2]
-        return context, rattention
+    # lstm_output : [batch_size, n_step, n_hidden * num_directions(=2)], F matrix
+    def attention_net(self, lstm_output, final_state):
+        hidden = final_state.view(-1, self.rnn_hidden * 2, 1)   # hidden : [batch_size, n_hidden * num_directions(=2), 1(=n_layer)]
+        attn_weights = torch.bmm(lstm_output, hidden).squeeze(2) # attn_weights : [batch_size, n_step]
+        soft_attn_weights = F.softmax(attn_weights, 1)
+        # [batch_size, n_hidden * num_directions(=2), n_step] * [batch_size, n_step, 1] = [batch_size, n_hidden * num_directions(=2), 1]
+        context = torch.bmm(lstm_output.transpose(1, 2), soft_attn_weights.unsqueeze(2)).squeeze(2)
+        return context, soft_attn_weights.data.numpy() # context : [batch_size, n_hidden * num_directions(=2)]
+
 
     def forward(self, input_ids, input_mask=None, targets=None):
-        outputs = self.bert(input_ids, input_mask=input_mask)        
+        bert_output = self.bert(input_ids, input_mask=input_mask)        
 
-        sequence_output, pooled_output = outputs[:2]  
-        #average = torch.mean(sequence_output, dim=1)
+        sequence_output, pooled_output = bert_output[:2] # sequence: [batch, 60, 768]
 
-        # lstm
-        rnn_out, (ht, ct) = self.rnn(pooled_output)
-        query = self.att_dropout(rnn_out)
-        attn_output, attention = self.attention_net(rnn_out, query)  # 
-        logits = self.classifier(attn_output)
+        ht = Variable(torch.zeros(self.num_rnn_layer, input_ids.shape[0], self.rnn_hidden)) # [num_layers(=1) * num_directions(=2), batch_size, n_hidden]
+        ct = Variable(torch.zeros(self.num_rnn_layer, input_ids.shape[0], self.rnn_hidden)) # [num_layers(=1) * num_directions(=2), batch_size, n_hidden]
+
+        rnn_out, (ht, ct) = self.rnn(sequence_output) # rnn_out: [batch, 60, 1536]        
+        model_output = self.dropout(rnn_out)   
+        attn_output, attention = self.attention_net(rnn_out, ht)             
+        logits = self.classifier(attn_output[:,-1]) # logits: torch.Size([batch, 2])
 
         out = (logits, )
         if targets is not None:
-            out = logits, targets
-        outputs = out + outputs[2:]
+            out = logits, targets       
+
+        outputs = out + bert_output[2:] # bert_output[2:] esta vacio ?
         return outputs
 
 # ACTUALIZACIÓN, UTILZIANDO UNA 1DCNN

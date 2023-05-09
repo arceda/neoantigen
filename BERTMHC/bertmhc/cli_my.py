@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from bertmhc import BERTMHC, BERTMHC_LINEAR, BERTMHC_RNN, BERTMHC_RNN2
+from bertmhc import BERTMHC, BERTMHC_LINEAR, BERTMHC_RNN, BERTMHC_RNN2, BERTMHC_RNN_ATT
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import logging
 import pandas as pd
@@ -39,7 +39,7 @@ logger.info("Training on {0} samples, eval on {1}".format(len(trainset), len(val
 torch.manual_seed(42)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-model = BERTMHC_RNN2.from_pretrained('bert-base')
+model = BERTMHC_RNN_ATT.from_pretrained('bert-base')
 
 for p in model.bert.parameters():
     p.requires_grad = True
@@ -53,7 +53,7 @@ model = model.to(device)
 epochs = 20
 lr = 0.15
 w_pos = 1.0 # mass positive weight
-save = "TRAIN_6_bertmhc_model.pt"
+save = "TRAIN_8_bertmhc_model.pt"
 alpha = 0.0 # alpha weight on mass loss, affinity loss weight with 1-alpha
 patience = 5 # Earlystopping patience
 metric = 'val_auc' # validation metric, default auc
