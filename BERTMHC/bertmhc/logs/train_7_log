@@ -1,0 +1,110 @@
+TRAIN RNN2 20 epochs
+__main__ - Training on 107424 samples, eval on 13428
+tape.models.modeling_utils - loading configuration file https://s3.amazonaws.com/songlabdata/proteindata/pytorch-models/bert-base-config.json from cache at /home/vicente/.cache/torch/protein_models/fbb05edff0ffa844a729a04850272a1f8973bc002526f6615ad113a5f5aacd36.05edb4ed225e1907a3878f9d68b275d79e025b667555aa94a086e27cb5c591e0
+tape.models.modeling_utils - Model config {
+  "attention_probs_dropout_prob": 0.1,
+  "base_model": "transformer",
+  "finetuning_task": null,
+  "hidden_act": "gelu",
+  "hidden_dropout_prob": 0.1,
+  "hidden_size": 768,
+  "initializer_range": 0.02,
+  "input_size": 768,
+  "intermediate_size": 3072,
+  "layer_norm_eps": 1e-12,
+  "max_position_embeddings": 8192,
+  "num_attention_heads": 12,
+  "num_hidden_layers": 12,
+  "num_labels": 2,
+  "output_attentions": false,
+  "output_hidden_states": false,
+  "output_size": 768,
+  "pruned_heads": {},
+  "torchscript": false,
+  "type_vocab_size": 1,
+  "vocab_size": 30
+}
+
+tape.models.modeling_utils - loading weights file https://s3.amazonaws.com/songlabdata/proteindata/pytorch-models/bert-base-pytorch_model.bin from cache at /home/vicente/.cache/torch/protein_models/2ed84d28db0a61af4cd2dd3f2ccdd3ee45b1533547a8e1213840af895e2fa8d1.8206daaea9be2736b6ccde432df9dc3dbb8c3233b47f07688d6ff38d74258d22
+tape.models.modeling_utils - Weights of BERTMHC_RNN2 not initialized from pretrained model: ['classifier.weight', 'classifier.bias', 'rnn.weight_ih_l0', 'rnn.weight_hh_l0', 'rnn.bias_ih_l0', 'rnn.bias_hh_l0', 'rnn.weight_ih_l0_reverse', 'rnn.weight_hh_l0_reverse', 'rnn.bias_ih_l0_reverse', 'rnn.bias_hh_l0_reverse', 'rnn.weight_ih_l1', 'rnn.weight_hh_l1', 'rnn.bias_ih_l1', 'rnn.bias_hh_l1', 'rnn.weight_ih_l1_reverse', 'rnn.weight_hh_l1_reverse', 'rnn.bias_ih_l1_reverse', 'rnn.bias_hh_l1_reverse']
+tape.models.modeling_utils - Weights from pretrained model not used in BERTMHC_RNN2: ['mlm.bias', 'mlm.transform.dense.weight', 'mlm.transform.dense.bias', 'mlm.transform.LayerNorm.weight', 'mlm.transform.LayerNorm.bias', 'mlm.decoder.weight']
+Training epoch 0
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:53<00:00,  5.66it/s]
+root - Sample dict log: {'val_cor': 0.45628973895240327, 'val_auc': 0.8156025798473675, 'val_ap': 0.41503593162864993, 'val_mass_auc': 0.5427335567049204, 'val_loss': 0.00969703622896969, 'train_loss': 0.019078765820744033}
+Validation loss (inf --> -0.815603).  Saving model ...
+Training epoch 1
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:42<00:00,  5.76it/s]
+root - Sample dict log: {'val_cor': 0.47624058312104245, 'val_auc': 0.8265328922625462, 'val_ap': 0.2666428452349787, 'val_mass_auc': 0.1774716643110631, 'val_loss': 0.009466535572960223, 'train_loss': 0.01879815048975651}
+Validation loss (-0.815603 --> -0.826533).  Saving model ...
+Training epoch 2
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:32<00:00,  5.86it/s]
+root - Sample dict log: {'val_cor': 0.4579362798502501, 'val_auc': 0.818113983461012, 'val_ap': 0.27177525232730504, 'val_mass_auc': 0.1966014236181865, 'val_loss': 0.009404060965426663, 'train_loss': 0.018800915145094122}
+EarlyStopping counter: 1 out of 5
+Training epoch 3
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:15<00:00,  6.04it/s]
+root - Sample dict log: {'val_cor': 0.455522236747454, 'val_auc': 0.8162395225808008, 'val_ap': 0.2719913102489688, 'val_mass_auc': 0.19602354918923634, 'val_loss': 0.009423840638956996, 'train_loss': 0.01884469713922507}
+EarlyStopping counter: 2 out of 5
+Training epoch 4
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:18<00:00,  6.01it/s]
+root - Sample dict log: {'val_cor': 0.4510346863787883, 'val_auc': 0.8111082995690975, 'val_ap': 0.26943906192640354, 'val_mass_auc': 0.18971162339119496, 'val_loss': 0.009436882244429136, 'train_loss': 0.01892653561291824}
+EarlyStopping counter: 3 out of 5
+Training epoch 5
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:33<00:00,  5.86it/s]
+root - Sample dict log: {'val_cor': 0.5161341796955813, 'val_auc': 0.8481107554610849, 'val_ap': 0.261616767772218, 'val_mass_auc': 0.15288734449511193, 'val_loss': 0.009146407100108183, 'train_loss': 0.01842802028774567}
+Validation loss (-0.826533 --> -0.848111).  Saving model ...
+Training epoch 6
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:29<00:00,  5.90it/s]
+root - Sample dict log: {'val_cor': 0.5307979364514178, 'val_auc': 0.8566689236515233, 'val_ap': 0.25986857073359915, 'val_mass_auc': 0.14371213267091137, 'val_loss': 0.009084493996026724, 'train_loss': 0.01823414362648528}
+Validation loss (-0.848111 --> -0.856669).  Saving model ...
+Training epoch 7
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:15<00:00,  6.04it/s]
+root - Sample dict log: {'val_cor': 0.5421839202860809, 'val_auc': 0.8631836830310382, 'val_ap': 0.2586857848854388, 'val_mass_auc': 0.13709270860163286, 'val_loss': 0.009053166583957222, 'train_loss': 0.018111425639752442}
+Validation loss (-0.856669 --> -0.863184).  Saving model ...
+Training epoch 8
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:15<00:00,  6.04it/s]
+root - Sample dict log: {'val_cor': 0.5492549110163374, 'val_auc': 0.8674549561578233, 'val_ap': 0.2580017351553493, 'val_mass_auc': 0.132945793411527, 'val_loss': 0.009062548127776638, 'train_loss': 0.018014899908326675}
+Validation loss (-0.863184 --> -0.867455).  Saving model ...
+Training epoch 9
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:15<00:00,  6.04it/s]
+root - Sample dict log: {'val_cor': 0.553554526898216, 'val_auc': 0.8708586628477474, 'val_ap': 0.257443406147934, 'val_mass_auc': 0.12970006727496766, 'val_loss': 0.009026531892444963, 'train_loss': 0.017922108882795693}
+Validation loss (-0.867455 --> -0.870859).  Saving model ...
+Training epoch 10
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:15<00:00,  6.04it/s]
+root - Sample dict log: {'val_cor': 0.5583203116184681, 'val_auc': 0.8730614245637367, 'val_ap': 0.2571502206486342, 'val_mass_auc': 0.12777803153577294, 'val_loss': 0.00901340856362497, 'train_loss': 0.017850348092271595}
+Validation loss (-0.870859 --> -0.873061).  Saving model ...
+Training epoch 11
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:15<00:00,  6.05it/s]
+root - Sample dict log: {'val_cor': 0.568522204212823, 'val_auc': 0.8773465584427066, 'val_ap': 0.2562203321788795, 'val_mass_auc': 0.12278868681747089, 'val_loss': 0.008935127386227938, 'train_loss': 0.01778302940414896}
+Validation loss (-0.873061 --> -0.877347).  Saving model ...
+Training epoch 12
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:15<00:00,  6.04it/s]
+root - Sample dict log: {'val_cor': 0.567126690118315, 'val_auc': 0.8769018135650607, 'val_ap': 0.25638640707222227, 'val_mass_auc': 0.12354789465123867, 'val_loss': 0.008995989248232007, 'train_loss': 0.017705878976644825}
+EarlyStopping counter: 1 out of 5
+Training epoch 13
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:16<00:00,  6.03it/s]
+root - Sample dict log: {'val_cor': 0.5706025484126277, 'val_auc': 0.8789184500815416, 'val_ap': 0.25611809578118594, 'val_mass_auc': 0.12150703612722716, 'val_loss': 0.008975005421497867, 'train_loss': 0.017648579210147265}
+Validation loss (-0.877347 --> -0.878918).  Saving model ...
+Training epoch 14
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:15<00:00,  6.04it/s]
+root - Sample dict log: {'val_cor': 0.5738385387126285, 'val_auc': 0.8810477452364471, 'val_ap': 0.255614375387307, 'val_mass_auc': 0.11890885414099464, 'val_loss': 0.008932042379783383, 'train_loss': 0.017584213339200697}
+Validation loss (-0.878918 --> -0.881048).  Saving model ...
+Training epoch 15
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:15<00:00,  6.04it/s]
+root - Sample dict log: {'val_cor': 0.579758983329808, 'val_auc': 0.8846098784940389, 'val_ap': 0.25514658736697327, 'val_mass_auc': 0.11547893553357297, 'val_loss': 0.00894096344798173, 'train_loss': 0.017523126432265435}
+Validation loss (-0.881048 --> -0.884610).  Saving model ...
+Training epoch 16
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:36<00:00,  5.82it/s]
+root - Sample dict log: {'val_cor': 0.578286628927213, 'val_auc': 0.8837912935766552, 'val_ap': 0.2551869762110623, 'val_mass_auc': 0.11643253698585043, 'val_loss': 0.008948864328175881, 'train_loss': 0.01746898741783984}
+EarlyStopping counter: 1 out of 5
+Training epoch 17
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:18<00:00,  6.01it/s]
+root - Sample dict log: {'val_cor': 0.5834024490942653, 'val_auc': 0.8837255579301561, 'val_ap': 0.2552869669464916, 'val_mass_auc': 0.11662205875582, 'val_loss': 0.00893976456589169, 'train_loss': 0.017413250732160428}
+EarlyStopping counter: 2 out of 5
+Training epoch 18
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [09:48<00:00,  5.71it/s]
+root - Sample dict log: {'val_cor': 0.5833192149850869, 'val_auc': 0.8851953923474605, 'val_ap': 0.2550452824953155, 'val_mass_auc': 0.11504208167821045, 'val_loss': 0.008922129190319665, 'train_loss': 0.017363793818107542}
+Validation loss (-0.884610 --> -0.885195).  Saving model ...
+Training epoch 19
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3357/3357 [10:10<00:00,  5.49it/s]
+root - Sample dict log: {'val_cor': 0.5843406465804791, 'val_auc': 0.8841913912789473, 'val_ap': 0.2552058228005, 'val_mass_auc': 0.11602530305471079, 'val_loss': 0.008920420233092564, 'train_loss': 0.017310087023913807}
+EarlyStopping counter: 1 out of 5
