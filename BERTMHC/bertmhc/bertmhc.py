@@ -48,6 +48,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+import math
 
 ''' # MHCHead
 (0): Linear(in_features=768, out_features=512, bias=True)
@@ -216,6 +217,7 @@ class BERTMHC_RNN_ATT(ProteinBertAbstractModel):
         self.att_dropout = 0.1
 
         self.dropout = nn.Dropout(self.rnn_dropout)
+        self.att_dropout = nn.Dropout(self.att_dropout)
         self.classifier = nn.Linear(2*self.rnn_hidden, self.num_labels)
 
         self.rnn = nn.LSTM(     input_size=self.hidden_size, hidden_size=self.rnn_hidden, 
@@ -224,21 +226,19 @@ class BERTMHC_RNN_ATT(ProteinBertAbstractModel):
 
         self.init_weights()
 
-    # lstm_output : [batch_size, n_step, n_hidden * num_directions(=2)], F matrix
-    def attention_net(self, lstm_output, final_state):
-        hidden = final_state.view(-1, self.rnn_hidden * 2, 1)   # hidden : [batch_size, n_hidden * num_directions(=2), 1(=n_layer)]
-        attn_weights = torch.bmm(lstm_output, hidden).squeeze(2) # attn_weights : [batch_size, n_step]
-        soft_attn_weights = F.softmax(attn_weights, 1)
-        # [batch_size, n_hidden * num_directions(=2), n_step] * [batch_size, n_step, 1] = [batch_size, n_hidden * num_directions(=2), 1]
-        context = torch.bmm(lstm_output.transpose(1, 2), soft_attn_weights.unsqueeze(2)).squeeze(2)
-        return context, soft_attn_weights.data.numpy() # context : [batch_size, n_hidden * num_directions(=2)]
+    def attention_net(self, x, query, mask=None):
+        d_k = query.size(-1)
+        scores = torch.matmul(query, x.transpose(1, 2)) /math.sqrt(d_k)  #   scores:[batch, seq_len, seq_len]
+        p_attn = F.softmax(scores, dim=-1)
+        rattention = torch.matmul(p_attn, x)
+        context = torch.matmul(p_attn, x).sum(1)  # [batch, seq_len, hidden_dim*2]->[batch, hidden_dim*2]
+        return context, rattention
 
 
     def forward(self, input_ids, input_mask=None, targets=None):
-        bert_output = self.bert(input_ids, input_mask=input_mask)        
-
+        bert_output = self.bert(input_ids, input_mask=input_mask) 
         sequence_output, pooled_output = bert_output[:2] # sequence: [batch, 60, 768]
-
+        """
         ht = Variable(torch.zeros(self.num_rnn_layer, input_ids.shape[0], self.rnn_hidden)) # [num_layers(=1) * num_directions(=2), batch_size, n_hidden]
         ct = Variable(torch.zeros(self.num_rnn_layer, input_ids.shape[0], self.rnn_hidden)) # [num_layers(=1) * num_directions(=2), batch_size, n_hidden]
 
@@ -247,6 +247,12 @@ class BERTMHC_RNN_ATT(ProteinBertAbstractModel):
         attn_output, attention = self.attention_net(rnn_out, ht)             
         logits = self.classifier(attn_output[:,-1]) # logits: torch.Size([batch, 2])
 
+        """
+        rnn_out, (ht, ct) = self.rnn(sequence_output) # rnn_out: [batch, 60, 1536] 
+        query = self.att_dropout(rnn_out)
+        attn_output, attention = self.attention_net(rnn_out, query)  # 和LSTM的不同就在于这一句
+        logits = self.classifier(attn_output)       
+
         out = (logits, )
         if targets is not None:
             out = logits, targets       
@@ -254,53 +260,7 @@ class BERTMHC_RNN_ATT(ProteinBertAbstractModel):
         outputs = out + bert_output[2:] # bert_output[2:] esta vacio ?
         return outputs
 
-# ACTUALIZACIÓN, UTILZIANDO UNA 1DCNN
-""" # it owrks poorly
-class BERTMHC_CNN(ProteinBertAbstractModel):
 
-    def __init__(self, config):
-        super().__init__(config)
-
-        self.bert = ProteinBertModel(config)
-
-        self.layer1 = nn.Sequential(
-            nn.Conv1d(60, 128, kernel_size=3), # 60 xq tenemos 60 aminoacidos
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.MaxPool1d(10))
-        self.layer2 = nn.Flatten()
-        self.layer3 = nn.Sequential(
-            nn.Linear(9728,4000),
-            nn.ReLU())
-        self.layer4 = nn.Sequential(
-            nn.Linear(4000,600),
-            nn.Softmax())        
-
-        self.init_weights()
-
-    def forward(self, input_ids, input_mask=None, targets=None):
-
-        outputs = self.bert(input_ids, input_mask=input_mask)
-
-        sequence_output, pooled_output = outputs[:2]
-
-        # print(sequence_output.shape) # torch.Size([32, 60, 768])
-
-        #average = torch.mean(sequence_output, dim=1)
-        #outputs = self.classify(average, targets) + outputs[2:]
-        
-        outputs = self.layer1(sequence_output)
-        outputs = self.layer2(outputs)
-        outputs = self.layer3(outputs)
-        logits = self.layer4(outputs)
-        
-        outputs = (logits, )
-
-        if targets is not None:
-            outputs = logits, targets
-
-        return outputs  # logits, (targets)
-"""
 
  # tampoco converge
 class BERTMHC_CNN(ProteinBertAbstractModel):
