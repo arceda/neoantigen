@@ -8,7 +8,7 @@ from transformers.modeling_outputs import SequenceClassifierOutput
 from transformers.file_utils import add_start_docstrings, add_start_docstrings_to_model_forward
 from transformers.models.bert.modeling_bert import BERT_INPUTS_DOCSTRING, BERT_START_DOCSTRING
 from transformers import Trainer, TrainingArguments, BertConfig
-from model_utils import ProteinBertSequenceClsRnnAtt, BertForSequenceClassification, ProteinBertSequenceClsRnn
+from model_utils import ProteinBertSequenceClsRnnAtt, ProteinBertSequenceClsRnn, BertForSequenceClassification
 from data_loader import My_Load_Dataset
 from transformers import EarlyStoppingCallback, IntervalStrategy
 from sklearn.metrics import accuracy_score, confusion_matrix, matthews_corrcoef, roc_auc_score
@@ -39,11 +39,13 @@ def compute_metrics(pred):
         'mcc': mcc
     }
 
-model_name = "../models/esm2_t12_35M_UR50D"
+#model_name = "../models/esm2_t33_650M_UR50D"
+model_name = "../models/esm2_t30_150M_UR50D"
 
 train_dataset = My_Load_Dataset(path="../dataset/netMHCIIpan3.2/train_mini.csv", tokenizer_name=model_name, max_length=71)
 val_dataset = My_Load_Dataset(path="../dataset/netMHCIIpan3.2/eval_mini.csv", tokenizer_name=model_name, max_length=71)
 test_dataset = My_Load_Dataset(path="../dataset/netMHCIIpan3.2/test_mini.csv", tokenizer_name=model_name, max_length=71)
+
 
 print(train_dataset[0]['input_ids'].shape)
 print(val_dataset[0])
@@ -59,28 +61,34 @@ config.length = 51
 config.cnn_filters = 512
 config.cnn_dropout = 0.1
 
-# con esm2_t6_8M_UR50D
-# train_0 -> RNN_att con 3 apochs
-# train_1 -> LINEAR con 20 apochs -> complete
+
+# model t6_8M 
+# train_0 -> RNN_att con 3 apochs -> complete
+# train_1 -> LINEAR con 20 apochs -> complete    -> early stopping
 # train_2 -> RNN con 20 apochs -> complete
-# train_3 -> RNN_att con 20 apochs -> coplete (paperspace)
+# train_3 -> RNN_att con 20 apochs -> complete   -> early stopping
 
-# con esm2_t12_35M_UR50D
-# train_4 -> LINEAR con 20 apochs -> complete
-# train_5 -> RNN con 20 apochs  -> complete
-# train_6 -> RNN_att con 20 apochs  -> complete (paperspace)
+# model t12_35M 
+# train_4 -> LINEAR con 20 apochs -> complete    -> early stopping
+# train_5 -> RNN con 20 apochs -> complete
+# train_6 -> RNN_att con 20 apochs -> complete
 
-# con esm2_t39_150M_UR50D
-# train_7 -> LINEAR con 20 apochs 
-# train_8 -> RNN con 20 apochs 
-# train_9 -> RNN_att con 20 apochs 
+# model t30_150M
+# train_7 -> Linear con 20 epochs -> complete
+# train_8 -> RNN con 20 epochs -> complete
+# train_9 -> RNN_att con 20 epochs -> complete
 
-path_results = "results/train_7/"
-path_model = "models/train_7/"
+# model t33_650M 
+# train_10 -> Linear con 20 epochs -> 
+# train_11 -> RNN con 20 epochs -> 
+# train_12 -> RNN_att con 20 epochs -> 
+
+path_results = "results/train_9_test/" # prueba de continuar el entrenamiento solo desde el ultimo checkpoint
+path_model = "models/train_9_test/"
 
 
 num_samples = 107424
-num_epochs = 20
+num_epochs = 30
 batch_size = 32
 
 # con early stopping
@@ -109,9 +117,9 @@ training_args = TrainingArguments(
 
 model = Trainer(        
         args            = training_args,  # training arguments, defined above        
-        model           = BertForSequenceClassification.from_pretrained(model_name, num_labels=2),  # Funciona bien
-        #model           = ProteinBertSequenceClsRnn.from_pretrained(model_name, config=config), 
-        #model           = ProteinBertSequenceClsRnnAtt.from_pretrained(model_name, config=config),    # ProBERT+BiLSTM+Attention
+        #model           = BertForSequenceClassification.from_pretrained(model_name, num_labels=2),  # Funciona bien
+        #model           = ProteinBertSequenceClsRnn.from_pretrained(model_name, config=config),
+        model           = ProteinBertSequenceClsRnnAtt.from_pretrained(model_name, config=config),    # ProBERT+BiLSTM+Attention
         train_dataset   = train_dataset,  # training dataset
         eval_dataset    = val_dataset,  # evaluation dataset
         compute_metrics = compute_metrics,  # evaluation metrics
@@ -120,5 +128,5 @@ model = Trainer(
 
 
 model.train(resume_from_checkpoint = True)
+#model.train()
 model.save_model(path_model)
-
