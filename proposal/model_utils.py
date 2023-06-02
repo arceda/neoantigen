@@ -9,6 +9,7 @@ from transformers.file_utils import add_start_docstrings, add_start_docstrings_t
 from transformers import Trainer, TrainingArguments, BertConfig
 from transformers.models.bert.modeling_bert import BERT_INPUTS_DOCSTRING, BERT_START_DOCSTRING
 import math
+from sklearn.metrics import accuracy_score, confusion_matrix, matthews_corrcoef, roc_auc_score
 
 @add_start_docstrings(
     """

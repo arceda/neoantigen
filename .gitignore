@@ -43,5 +43,5 @@ models/*
 
 proposal/models/*
 proposal/results/*
-
+proposal/__pycache__/*
 

@@ -6,13 +6,23 @@ import os
 import pandas as pd
 import numpy as np
 import re
+from typing import Union
 
 from transformers import Trainer, TrainingArguments, BertConfig
 from sklearn.metrics import accuracy_score, confusion_matrix, matthews_corrcoef, roc_auc_score
 
+from tape.tokenizers import TAPETokenizer
+
 class My_Load_Dataset(Dataset):
-    def __init__(self, path, tokenizer_name='esm2_t6_8M_UR50D', max_length=51):                  
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, do_lower_case=False)
+    def __init__(self, path, tokenizer_name, max_length):   
+        print("constructor")
+        if tokenizer_name == "bert-base":
+             print("TOKENIZER TAPE")
+             tokenizer = TAPETokenizer(vocab='iupac')
+             self.tokenizer = tokenizer
+        else:
+            print("TOKENIZER ESM")
+            self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, do_lower_case=False)
 
         self.seqs, self.labels = self.load_dataset(path)        
         self.max_length = max_length
