@@ -88,7 +88,7 @@ config.cnn_filters = 512
 config.cnn_dropout = 0.1
 #print(config)
 
-sys.exit()
+#sys.exit()
 
 # model t6_8M 
 # train_0 -> RNN_att con 3 apochs -> complete
@@ -136,9 +136,11 @@ training_args = TrainingArguments(
         save_strategy               = "epoch"
     )
 
+
 trainer = Trainer(        
         args            = training_args,   
-        model           = BertLinear.from_pretrained(model_name, config=config), 
+        #model           = BertLinear.from_pretrained(model_name, config=config), 
+        model           = TapeLinear.from_pretrained(model_name, config=config), 
         train_dataset   = trainset,  
         eval_dataset    = valset, 
         compute_metrics = compute_metrics,  

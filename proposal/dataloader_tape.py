@@ -95,7 +95,7 @@ class DataSetLoaderTAPE(Dataset):
 
         ret = {'input_ids': token_ids,
                'attention_mask': input_mask,
-               'targets': item['targets']}
+               'labels': item['targets']}
         if self.instance_weight:
             ret['instance_weights'] = item['instance_weights']
         return ret

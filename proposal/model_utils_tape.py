@@ -28,13 +28,12 @@ class TapeLinear(ProteinBertAbstractModel):
 
         self.num_labels = config.num_labels
 
-        self.bert = BertModel(config)
-        self.dropout = nn.Dropout(0.8)
+        self.bert = ProteinBertModel(config)
+        self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
 
         self.init_weights()
-
-    @add_start_docstrings_to_model_forward(BERT_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
+    
     def forward(
             self,
             input_ids=None,
@@ -47,46 +46,18 @@ class TapeLinear(ProteinBertAbstractModel):
             output_attentions=None,
             output_hidden_states=None,
             return_dict=None,
-    ):
-        r"""
-        labels (:obj:`torch.LongTensor` of shape :obj:`(batch_size,)`, `optional`):
-            Labels for computing the sequence classification/regression loss. Indices should be in :obj:`[0, ...,
-            config.num_labels - 1]`. If :obj:`config.num_labels == 1` a regression loss is computed (Mean-Square loss),
-            If :obj:`config.num_labels > 1` a classification loss is computed (Cross-Entropy).
-        """
-
+    ):                
         
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
-        outputs = self.bert(
-            input_ids,
-            attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
-            position_ids=position_ids,
-            head_mask=head_mask,
-            inputs_embeds=inputs_embeds,
-            output_attentions=output_attentions,
-            output_hidden_states=output_hidden_states,
-            return_dict=return_dict,
-        )
-
-        pooled_output = outputs[1]
+        outputs = self.bert(input_ids, input_mask=attention_mask) 
+        sequence_output, pooled_output = outputs[:2]  
 
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
+      
+        loss_fct = CrossEntropyLoss()
+        loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))      
 
-        loss = None
-        if labels is not None:
-            if self.num_labels == 1:
-                #  We are doing regression
-                loss_fct = MSELoss()
-                loss = loss_fct(logits.view(-1), labels.view(-1))
-            else:
-                loss_fct = CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
-
-        if not return_dict:
-            output = (logits,) + outputs[2:]
-            return ((loss,) + output) if loss is not None else output
+        print("loss", loss)  
 
         return SequenceClassifierOutput(
             loss=loss,
