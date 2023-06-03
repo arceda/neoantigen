@@ -29,7 +29,7 @@ class TapeLinear(ProteinBertAbstractModel):
         self.num_labels = config.num_labels
 
         self.bert = BertModel(config)
-        self.dropout = nn.Dropout(config.hidden_dropout_prob)
+        self.dropout = nn.Dropout(0.8)
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
 
         self.init_weights()

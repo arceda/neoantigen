@@ -18,7 +18,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, matthews_corrcoef,
     """,
     BERT_START_DOCSTRING,
 )
-class BertForSequenceClassification(BertPreTrainedModel):
+class BertLinear(BertPreTrainedModel):
 
     def __init__(self, config):
         super().__init__(config)
@@ -51,8 +51,23 @@ class BertForSequenceClassification(BertPreTrainedModel):
             If :obj:`config.num_labels > 1` a classification loss is computed (Cross-Entropy).
         """
 
+        """
+        print("\n\nforward")
+        print(input_ids)            # si hay
+        print(attention_mask)       # si hay
+        print(token_type_ids)       # None
+        print(position_ids)         # None
+        print(head_mask)            # None
+        print(inputs_embeds)        # None
+        print(labels)               # si hay
+        print(output_attentions)    # None
+        print(output_hidden_states) # None
+        print(return_dict)          # None
+        """
         
+        # el return_dict = true, y sale del config
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        
         outputs = self.bert(
             input_ids,
             attention_mask=attention_mask,
@@ -98,7 +113,7 @@ class BertForSequenceClassification(BertPreTrainedModel):
     """,
     BERT_START_DOCSTRING,
 )
-class ProteinBertSequenceClsRnnAtt(BertPreTrainedModel):
+class BertRnnAtt(BertPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
@@ -202,7 +217,7 @@ class ProteinBertSequenceClsRnnAtt(BertPreTrainedModel):
     """,
     BERT_START_DOCSTRING,
 )
-class ProteinBertSequenceClsRnn(BertPreTrainedModel):
+class BertRnn(BertPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
