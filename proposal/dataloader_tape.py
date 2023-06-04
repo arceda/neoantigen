@@ -85,6 +85,7 @@ class DataSetLoaderTAPE(Dataset):
 
         # padding, en TAPE 0 es el token de pad
         # tambien podriamos probar con 27, que es el id del aminoacido X.
+        
         pad = np.full(self.max_length - len(token_ids), 0, dtype=token_ids[0].dtype) 
 
         token_ids = np.hstack((token_ids, pad))

@@ -37,8 +37,8 @@ def compute_metrics(pred):
     }
 
 
-path_train_csv = "../dataset/netMHCIIpan3.2/train_micro.csv"
-path_val_csv = "../dataset/netMHCIIpan3.2/eval_micro.csv"
+path_train_csv = "../dataset/netMHCIIpan3.2/train_mini.csv"
+path_val_csv = "../dataset/netMHCIIpan3.2/eval_mini.csv"
 
 #################################################################################
 #################################################################################
@@ -62,7 +62,7 @@ model_name = "bert-base"   # TAPE
 if model_type == "tape":
     # read with TAPE tokenizer, la longitus del mhc es 34 => 34 + 37 + 2= 73    
     trainset = DataSetLoaderTAPE(path_train_csv, max_pep_len=37, max_length=73) # el paper usa max_peptide_lenght = 24
-    valset = DataSetLoaderTAPE(path_val_csv, max_pep_len=37, max_length=7)
+    valset = DataSetLoaderTAPE(path_val_csv, max_pep_len=37, max_length=73)
     config = ProteinBertConfig.from_pretrained(model_name, num_labels=2)
     
 else:
@@ -86,7 +86,7 @@ config.rnn_hidden = 768
 config.length = 51
 config.cnn_filters = 512
 config.cnn_dropout = 0.1
-#print(config)
+print(config)
 
 #sys.exit()
 

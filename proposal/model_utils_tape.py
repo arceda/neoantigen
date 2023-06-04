@@ -49,6 +49,7 @@ class TapeLinear(ProteinBertAbstractModel):
     ):                
         
         outputs = self.bert(input_ids, input_mask=attention_mask) 
+
         sequence_output, pooled_output = outputs[:2]  
 
         pooled_output = self.dropout(pooled_output)
@@ -57,12 +58,10 @@ class TapeLinear(ProteinBertAbstractModel):
         loss_fct = CrossEntropyLoss()
         loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))      
 
-        print("loss", loss)  
-
         return SequenceClassifierOutput(
             loss=loss,
             logits=logits,
-            hidden_states=outputs.hidden_states,
-            attentions=outputs.attentions,
+            hidden_states=None, # TAPE, no esta retornando los hidden states, pero si deberia https://github.com/songlab-cal/tape/blob/master/tape/models/modeling_bert.py
+            attentions=None, # TAPE, no esta retornando los attentions pero si deberia
         )
 
