@@ -1,0 +1,21 @@
+
+# model t6_8M 
+# train_0 -> RNN_att con 3 apochs -> complete
+# train_1 -> LINEAR con 20 apochs -> complete    -> early stopping
+# train_2 -> RNN con 20 apochs -> complete
+# train_3 -> RNN_att con 20 apochs -> complete   -> early stopping
+
+# model t12_35M 
+# train_4 -> LINEAR con 20 apochs -> complete    -> early stopping
+# train_5 -> RNN con 20 apochs -> complete
+# train_6 -> RNN_att con 20 apochs -> complete
+
+# model t30_150M
+# train_7 -> Linear con 20 epochs -> complete
+# train_8 -> RNN con 20 epochs -> complete
+# train_9 -> RNN_att con 20 epochs -> complete
+
+# model t33_650M 
+# train_10 -> Linear con 20 epochs -> 
+# train_11 -> RNN con 20 epochs -> 
+# train_12 -> RNN_att con 20 epochs -> 

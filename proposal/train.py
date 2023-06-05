@@ -1,10 +1,11 @@
-from transformers import Trainer, TrainingArguments, BertConfig
+from transformers import Trainer, TrainingArguments, BertConfig, AdamW
 from model_utils_bert import BertLinear, BertRnn, BertRnnAtt
 from model_utils_tape import TapeLinear
 from transformers import EarlyStoppingCallback, IntervalStrategy
 from sklearn.metrics import accuracy_score, confusion_matrix, matthews_corrcoef, roc_auc_score
 from tape import ProteinBertConfig
 from torch.utils.data import DataLoader
+from transformers import get_scheduler
 
 # data loaders
 from dataloader_bert import DataSetLoaderBERT
@@ -47,15 +48,14 @@ model_type = "tape"
 #model_type = "bert" # EM1, ESM2, PortBert
 
 # especificar donde se guadra los modlos y resultados
-path_results    = "results/train_100/" # prueba de continuar el entrenamiento solo desde el ultimo checkpoint
+path_results    = "results/train_100/" 
 path_model      = "models/train_100/"
 
 # el modelo preentrenado
-model_name = "bert-base"   # TAPE
-#model_name = "../models/esm2_t6_8M_UR50D"
-#model_name = "../models/esm2_t33_650M_UR50D"
-#model_name = "../models/esm2_t30_150M_UR50D"
-
+model_name = "bert-base"   # TAPE                   # train 1, 2, 3, 4
+#model_name = "../models/esm2_t6_8M_UR50D"          # train 1, 2, 3, 4
+#model_name = "../models/esm2_t33_650M_UR50D"       # 
+model_name = "../models/esm2_t30_150M_UR50D"
 #################################################################################
 #################################################################################
 
@@ -71,14 +71,6 @@ else:
     valset = DataSetLoaderBERT(path=path_val_csv, tokenizer_name=model_name, max_length=73)
     config = BertConfig.from_pretrained(model_name, num_labels=2)
 
-#dataset = DataLoader(trainset)
-#iterator = iter(dataset)
-#print(next(iterator))
-#print(next(iterator))
-
-
-#print(trainset[0]['input_ids'].shape)
-
 config.rnn = "lstm"
 config.num_rnn_layer = 2
 config.rnn_dropout = 0.1
@@ -86,67 +78,69 @@ config.rnn_hidden = 768
 config.length = 51
 config.cnn_filters = 512
 config.cnn_dropout = 0.1
-print(config)
+
+#################################################################################
+#################################################################################
+model_ = TapeLinear.from_pretrained(model_name, config=config)
+
+#################################################################################
+#################################################################################
+
+#dataset = DataLoader(trainset)
+#iterator = iter(dataset)
+#print(next(iterator))
+#print(next(iterator))
+#print(trainset[0]['input_ids'].shape)
 
 #sys.exit()
 
-# model t6_8M 
-# train_0 -> RNN_att con 3 apochs -> complete
-# train_1 -> LINEAR con 20 apochs -> complete    -> early stopping
-# train_2 -> RNN con 20 apochs -> complete
-# train_3 -> RNN_att con 20 apochs -> complete   -> early stopping
-
-# model t12_35M 
-# train_4 -> LINEAR con 20 apochs -> complete    -> early stopping
-# train_5 -> RNN con 20 apochs -> complete
-# train_6 -> RNN_att con 20 apochs -> complete
-
-# model t30_150M
-# train_7 -> Linear con 20 epochs -> complete
-# train_8 -> RNN con 20 epochs -> complete
-# train_9 -> RNN_att con 20 epochs -> complete
-
-# model t33_650M 
-# train_10 -> Linear con 20 epochs -> 
-# train_11 -> RNN con 20 epochs -> 
-# train_12 -> RNN_att con 20 epochs -> 
+############ hyperparameters ####################################################
 
 num_samples = len(trainset)
-num_epochs = 30
+num_epochs = 10
 batch_size = 32
+num_training_steps = num_epochs * num_samples
 
-# con early stopping
 training_args = TrainingArguments(
         output_dir                  = path_results, 
         num_train_epochs            = num_epochs,   
         per_device_train_batch_size = batch_size,   
-        per_device_eval_batch_size  = batch_size,   
-        warmup_steps                = 1000,         # number of warmup steps for learning rate scheduler
-        weight_decay                = 0.01,         # strength of weight decay = L2 regulrization
-        learning_rate               = 5e-5,         # The initial learning rate for optimizer.
-        logging_dir                 = path_results, 
-        gradient_accumulation_steps = 16,           # total number of steps before back propagation          
-        logging_strategy            ="epoch",
-
-        # a parir de aqui es necesario para early stopping
-        eval_steps                  = num_samples/batch_size,          # How often to eval        
+        per_device_eval_batch_size  = batch_size,         
+        logging_dir                 = path_results,        
+        logging_strategy            = "epoch",
+        # for early stopping
+        eval_steps                  = num_samples/batch_size, # How often to eval        
         metric_for_best_model       = 'f1',
         load_best_model_at_end      = True,        
         evaluation_strategy         = "epoch",
         save_strategy               = "epoch"
     )
 
+# hiperparameters BERTMHC, uso SGD with momentum, ademas uso escheduler
+lr = 0.15
+weight_decay = 0.0001
+momentum = 0.9
+
+# hiperparameters HLAB, uso AdamW (en teoria es mejor de SGD with momentum)
+#lr = 5e-5
+#weight_decay = 0.01
+betas = ((0.9, 0.999)) # defult
+
+# optimizer Adam Weigh Decay https://pytorch.org/docs/stable/generated/torch.optim.AdamW.html
+optimizer = AdamW(model_.parameters(), lr=lr, betas=betas, weight_decay=weight_decay)
+
+# scheduller
+lr_scheduler = get_scheduler("linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
 
 trainer = Trainer(        
         args            = training_args,   
-        #model           = BertLinear.from_pretrained(model_name, config=config), 
-        model           = TapeLinear.from_pretrained(model_name, config=config), 
+        model           = model_, 
         train_dataset   = trainset,  
         eval_dataset    = valset, 
         compute_metrics = compute_metrics,  
+        optimizers = (optimizers, lr_scheduler),        
         callbacks       = [EarlyStoppingCallback(early_stopping_patience=5)] 
     )
-
 
 #trainer.train(resume_from_checkpoint = True)
 trainer.train()
