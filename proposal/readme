@@ -16,6 +16,6 @@
 # train_9 -> RNN_att con 20 epochs -> complete
 
 # model t33_650M 
-# train_10 -> Linear con 20 epochs -> 
+# train_10 -> Linear con 20 epochs -> no converge
 # train_11 -> RNN con 20 epochs -> 
 # train_12 -> RNN_att con 20 epochs -> 
